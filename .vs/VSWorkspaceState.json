@@ -1,6 +1,10 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\school",
+    "\\school\\v01.00",
+    "\\school\\v01.00\\allai"
   ],
+  "SelectedNode": "\\school\\v01.00\\allai",
   "PreviewInSolutionExplorer": false
 }

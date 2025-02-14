@@ -1,0 +1,254 @@
+пример на cs искусственного интеллекта с Байесовским алгоритмом
+
+Байесовский классификатор — это мощный инструмент машинного обучения, основанный на теореме Байеса. Он позволяет предсказывать классы объектов на основе известных данных о них. Рассмотрим пример на языке C#.
+
+Задача
+Предположим, мы хотим создать модель, которая определяет, стоит ли человеку идти на прогулку, основываясь на погоде. У нас есть данные о том, какая погода была в предыдущие дни и ходили ли люди на прогулку.
+
+Данные
+День	Температура (°C)	Облачно	Прогулка
+1	28	Да	Нет
+2	22	Нет	Да
+3	18	Да	Нет
+4	24	Нет	Да
+...	...	...	...
+Теорема Байеса
+Теорема Байеса формулируется следующим образом:
+
+$$ P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)}
+
+$$
+
+Где:
+
+P
+(
+A
+∣
+B
+)
+P(A∣B) — апостериорная вероятность события A при условии B.
+P
+(
+B
+∣
+A
+)
+P(B∣A) — условная вероятность события B при условии A.
+P
+(
+A
+)
+P(A) — априорная вероятность события A.
+P
+(
+B
+)
+P(B) — маргинальная вероятность события B.
+Решение
+Шаг 1: Импорт библиотек
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Определения классов и данных
+        // ...
+    }
+}
+Шаг 2: Создание модели данных
+
+class WeatherData
+{
+    public double Temperature { get; set; }
+    public bool Cloudy { get; set; }
+    public bool Walk { get; set; }
+
+    public WeatherData(double temperature, bool cloudy, bool walk)
+    {
+        Temperature = temperature;
+        Cloudy = cloudy;
+        Walk = walk;
+    }
+}
+Шаг 3: Загрузка данных
+
+List<WeatherData> data = new List<WeatherData>
+{
+    new WeatherData(28, true, false),
+    new WeatherData(22, false, true),
+    new WeatherData(18, true, false),
+    new WeatherData(24, false, true),
+    // Добавьте больше данных здесь...
+};
+Шаг 4: Подсчет частот
+Подсчитываем частоты различных комбинаций признаков.
+
+
+double TotalWalk = data.Count(d => d.Walk);
+double TotalNoWalk = data.Count - TotalWalk;
+
+Dictionary<bool, Dictionary<bool, int>> CloudyFrequency = new Dictionary<bool, Dictionary<bool, int>>
+{
+    {true, new Dictionary<bool, int>()},
+    {false, new Dictionary<bool, int>()}
+};
+
+foreach (bool cloudy in new []{true, false})
+{
+    CloudyFrequency[cloudy][true] = data.Count(d => d.Cloudy == cloudy && d.Walk);
+    CloudyFrequency[cloudy][false] = data.Count(d => d.Cloudy == cloudy && !d.Walk);
+}
+
+Dictionary<double, Dictionary<bool, int>> TemperatureFrequency = new Dictionary<double, Dictionary<bool, int>>();
+
+foreach (var datum in data)
+{
+    if (!TemperatureFrequency.ContainsKey(datum.Temperature))
+    {
+        TemperatureFrequency[datum.Temperature] = new Dictionary<bool, int>()
+        {
+            {true, 0},
+            {false, 0}
+        };
+    }
+    TemperatureFrequency[datum.Temperature][datum.Walk]++;
+}
+Шаг 5: Применение теоремы Байеса
+Рассчитаем вероятности для новых значений температуры и облачности.
+
+
+double BayesProbability(bool cloudy, double temperature, bool walk)
+{
+    double probabilityCloudyGivenWalk = (double)CloudyFrequency[cloudy][walk] / TotalWalk;
+    double probabilityCloudyGivenNoWalk = (double)CloudyFrequency[cloudy][!walk] / TotalNoWalk;
+
+    double probabilityTemperatureGivenWalk = (double)TemperatureFrequency[temperature][walk] / TotalWalk;
+    double probabilityTemperatureGivenNoWalk = (double)TemperatureFrequency[temperature][!walk] / TotalNoWalk;
+
+    double probabilityWalk = (double)TotalWalk / data.Count;
+    double probabilityNoWalk = (double)TotalNoWalk / data.Count;
+
+    double numerator = probabilityCloudyGivenWalk * probabilityTemperatureGivenWalk * probabilityWalk;
+    double denominator = probabilityCloudyGivenWalk * probabilityTemperatureGivenWalk * probabilityWalk +
+                         probabilityCloudyGivenNoWalk * probabilityTemperatureGivenNoWalk * probabilityNoWalk;
+
+    return numerator / denominator;
+}
+Шаг 6: Тестирование модели
+Проверим модель на новых данных.
+
+
+void TestModel()
+{
+    bool cloudy = true;
+    double temperature = 26;
+    bool walk = true;
+
+    double probability = BayesProbability(cloudy, temperature, walk);
+    Console.WriteLine($"Вероятность прогулки при температуре {temperature}°C и облачной погоде: {probability:P2}");
+}
+Полный код
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        List<WeatherData> data = new List<WeatherData>
+        {
+            new WeatherData(28, true, false),
+            new WeatherData(22, false, true),
+            new WeatherData(18, true, false),
+            new WeatherData(24, false, true),
+            // Добавьте больше данных здесь...
+        };
+
+        double TotalWalk = data.Count(d => d.Walk);
+        double TotalNoWalk = data.Count - TotalWalk;
+
+        Dictionary<bool, Dictionary<bool, int>> CloudyFrequency = new Dictionary<bool, Dictionary<bool, int>>()
+        {
+            {true, new Dictionary<bool, int>()},
+            {false, new Dictionary<bool, int>()}
+        };
+
+        foreach (bool cloudy in new []{true, false})
+        {
+            CloudyFrequency[cloudy][true] = data.Count(d => d.Cloudy == cloudy && d.Walk);
+            CloudyFrequency[cloudy][false] = data.Count(d => d.Cloudy == cloudy && !d.Walk);
+        }
+
+        Dictionary<double, Dictionary<bool, int>> TemperatureFrequency = new Dictionary<double, Dictionary<bool, int>>();
+
+        foreach (var datum in data)
+        {
+            if (!TemperatureFrequency.ContainsKey(datum.Temperature))
+            {
+                TemperatureFrequency[datum.Temperature] = new Dictionary<bool, int>()
+                {
+                    {true, 0},
+                    {false, 0}
+                };
+            }
+            TemperatureFrequency[datum.Temperature][datum.Walk]++;
+        }
+
+        double BayesProbability(bool cloudy, double temperature, bool walk)
+        {
+            double probabilityCloudyGivenWalk = (double)CloudyFrequency[cloudy][walk] / TotalWalk;
+            double probabilityCloudyGivenNoWalk = (double)CloudyFrequency[cloudy][!walk] / TotalNoWalk;
+
+            double probabilityTemperatureGivenWalk = (double)TemperatureFrequency[temperature][walk] / TotalWalk;
+            double probabilityTemperatureGivenNoWalk = (double)TemperatureFrequency[temperature][!walk] / TotalNoWalk;
+
+            double probabilityWalk = (double)TotalWalk / data.Count;
+            double probabilityNoWalk = (double)TotalNoWalk / data.Count;
+
+            double numerator = probabilityCloudyGivenWalk * probabilityTemperatureGivenWalk * probabilityWalk;
+            double denominator = probabilityCloudyGivenWalk * probabilityTemperatureGivenWalk * probabilityWalk +
+                                 probabilityCloudyGivenNoWalk * probabilityTemperatureGivenNoWalk * probabilityNoWalk;
+
+            return numerator / denominator;
+        }
+
+        void TestModel()
+        {
+            bool cloudy = true;
+            double temperature = 26;
+            bool walk = true;
+
+            double probability = BayesProbability(cloudy, temperature, walk);
+            Console.WriteLine($"Вероятность прогулки при температуре {temperature}°C и облачной погоде: {probability:P2}");
+        }
+
+        TestModel();
+    }
+}
+
+class WeatherData
+{
+    public double Temperature { get; set; }
+    public bool Cloudy { get; set; }
+    public bool Walk { get; set; }
+
+    public WeatherData(double temperature, bool cloudy, bool walk)
+    {
+        Temperature = temperature;
+        Cloudy = cloudy;
+        Walk = walk;
+    }
+}
+Объяснение работы программы
+Данные: Программа загружает набор данных о погодных условиях и информации о том, совершали ли люди прогулку в этот день.
+Частоты: Подсчитываются частоты различных комбинаций признаков (температура, облачность, прогулка/непрогулка).
+Теорема Байеса: На основании этих частот рассчитываются вероятности того, что человек пойдет на прогулку при определенных значениях температуры и облачности.
+Тестирование: Модель тестируется на новых данных, и рассчитывается вероятность прогулки.
+Этот пример показывает, как можно использовать Байесовский классификатор для прогнозирования событий на основе исторических данных.

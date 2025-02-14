@@ -1,0 +1,178 @@
+Эволюционные алгоритмы (ЭА) представляют собой класс методов оптимизации, основанных на принципах естественного отбора и эволюции. Они часто используются для решения сложных задач оптимизации, где традиционные методы могут оказаться неэффективными. В этом примере я покажу простой код на PHP для реализации одного из видов ЭА – генетического алгоритма (ГА).
+
+### Описание задачи
+
+Предположим, у нас есть функция $f(x)$, которую мы хотим оптимизировать. Для простоты будем искать максимум функции на заданном интервале. Например:
+
+$$ f(x) = x^2 + 10x
+
+$$
+
+Мы ищем максимальное значение этой функции на интервале от $-100$ до $100$.
+
+### Код
+
+```php
+<?php
+
+class GeneticAlgorithm {
+    
+    private $populationSize;
+    private $mutationRate;
+    private $maxGenerations;
+    private $minX;
+    private $maxX;
+    private $precision;
+    
+    public function __construct($populationSize, $mutationRate, $maxGenerations, $minX, $maxX, $precision) {
+        $this->populationSize = $populationSize;
+        $this->mutationRate = $mutationRate;
+        $this->maxGenerations = $maxGenerations;
+        $this->minX = $minX;
+        $this->maxX = $maxX;
+        $this->precision = $precision;
+    }
+    
+    // Функция для генерации случайного числа в пределах заданного диапазона
+    private function generateRandomNumber() {
+        return mt_rand($this->minX * pow(10, $this->precision), $this->maxX * pow(10, $this->precision)) / pow(10, $this->precision);
+    }
+    
+    // Генерация начальной популяции
+    private function initializePopulation() {
+        $population = [];
+        
+        for ($i = 0; $i < $this->populationSize; $i++) {
+            $population[] = [
+                'gene' => $this->generateRandomNumber(),
+                'fitness' => $this->calculateFitness($this->generateRandomNumber())
+            ];
+        }
+        
+        return $population;
+    }
+    
+    // Функция для вычисления значения функции
+    private function calculateFunctionValue($x) {
+        return $x * $x + 10 * $x;
+    }
+    
+    // Функция для вычисления приспособленности особи
+    private function calculateFitness($x) {
+        return $this->calculateFunctionValue($x);
+    }
+    
+    // Выбор двух родителей методом рулетки
+    private function selectParents($population) {
+        $totalFitness = array_sum(array_column($population, 'fitness'));
+        $parent1 = null;
+        $parent2 = null;
+        
+        do {
+            $randomFitness = mt_rand(0, $totalFitness);
+            
+            foreach ($population as $individual) {
+                if ($randomFitness <= $individual['fitness']) {
+                    $parent1 = $individual;
+                    break;
+                }
+                
+                $randomFitness -= $individual['fitness'];
+            }
+            
+            $randomFitness = mt_rand(0, $totalFitness);
+            
+            foreach ($population as $individual) {
+                if ($randomFitness <= $individual['fitness'] && $individual !== $parent1) {
+                    $parent2 = $individual;
+                    break;
+                }
+                
+                $randomFitness -= $individual['fitness'];
+            }
+        } while ($parent1 === $parent2);
+        
+        return [$parent1, $parent2];
+    }
+    
+    // Скрещивание двух особей
+    private function crossover($parent1, $parent2) {
+        $childGene = ($parent1['gene'] + $parent2['gene']) / 2;
+        return ['gene' => $childGene, 'fitness' => $this->calculateFitness($childGene)];
+    }
+    
+    // Мутация особи
+    private function mutate($individual) {
+        if (mt_rand(0, 99) < $this->mutationRate * 100) {
+            $mutatedGene = $this->generateRandomNumber();
+            return ['gene' => $mutatedGene, 'fitness' => $this->calculateFitness($mutatedGene)];
+        }
+        
+        return $individual;
+    }
+    
+    // Замена старой популяции новой
+    private function replacePopulation($oldPopulation, $newPopulation) {
+        return array_merge($oldPopulation, $newPopulation);
+    }
+    
+    // Запуск ГА
+    public function run() {
+        $population = $this->initializePopulation();
+        
+        for ($generation = 0; $generation < $this->maxGenerations; $generation++) {
+            $newPopulation = [];
+            
+            for ($i = 0; $i < $this->populationSize; $i += 2) {
+                list($parent1, $parent2) = $this->selectParents($population);
+                $child1 = $this->crossover($parent1, $parent2);
+                $child2 = $this->crossover($parent2, $parent1);
+                $newPopulation[] = $this->mutate($child1);
+                $newPopulation[] = $this->mutate($child2);
+            }
+            
+            $population = $this->replacePopulation($population, $newPopulation);
+        }
+        
+        usort($population, function($a, $b) {
+            return $b['fitness'] <=> $a['fitness'];
+        });
+        
+        return $population[0]['gene'];
+    }
+}
+
+// Параметры ГА
+$populationSize = 50;
+$mutationRate = 0.01;
+$maxGenerations = 100;
+$minX = -100;
+$maxX = 100;
+$precision = 4;
+
+// Создание экземпляра класса Генетический Алгоритм
+$ga = new GeneticAlgorithm($populationSize, $mutationRate, $maxGenerations, $minX, $maxX, $precision);
+
+// Запуск ГА
+$result = $ga->run();
+echo "Оптимальное значение x: " . number_format($result, $precision) . "\n";
+?>
+```
+
+### Объяснение кода
+
+1. **Класс `GeneticAlgorithm`**:
+   - Конструктор принимает параметры для настройки работы алгоритма: размер популяции, вероятность мутации, количество поколений, диапазон значений переменной $x$, точность представления чисел.
+   
+2. **Методы**:
+   - `generateRandomNumber`: генерирует случайное число в заданных границах.
+   - `initializePopulation`: создает начальную популяцию случайным образом.
+   - `calculateFunctionValue`: вычисляет значение целевой функции для данного $x$.
+   - `calculateFitness`: вычисляет приспособленность особи (в данном случае совпадает со значением функции).
+   - `selectParents`: выбирает двух родителей методом рулетки.
+   - `crossover`: выполняет скрещивание двух особей, создавая нового потомка.
+   - `mutate`: мутирует генотип особи с определенной вероятностью.
+   - `replacePopulation`: заменяет старую популяцию новой.
+   - `run`: основной метод, который запускает процесс эволюции и возвращает оптимальное решение.
+
+Этот пример демонстрирует базовую реализацию генетического алгоритма. Он может быть расширен и улучшен различными способами, такими как добавление новых операторов кроссинговера и мутаций, использование различных стратегий селекции и так далее.

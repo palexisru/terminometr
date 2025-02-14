@@ -1,0 +1,203 @@
+пример искусственного интеллекта с эволюционным алгоритмом
+
+Эволюционные алгоритмы представляют собой класс методов оптимизации, вдохновленных биологическими процессами эволюции, такими как естественный отбор, мутации и рекомбинации. Они широко используются в задачах машинного обучения и искусственного интеллекта для поиска оптимальных решений сложных проблем.
+
+Рассмотрим пример использования генетического алгоритма (одной из разновидностей эволюционных алгоритмов) для решения задачи минимизации функции.
+
+Задача
+Найти минимальное значение функции 
+f
+(
+x
+)
+=
+x
+2
+f(x)=x 
+2
+  на интервале от 
+−
+10
+−10 до 
++
+10
++10.
+
+Шаги решения
+1. Инициализация популяции
+Начнем с создания начальной популяции случайных особей. Каждая особь представляет собой потенциальное решение задачи (значение переменной 
+x
+x). Размер популяции может быть любым, но обычно берется порядка нескольких десятков или сотен.
+
+
+import random
+
+# Параметры
+POPULATION_SIZE = 100
+MIN_VALUE = -10
+MAX_VALUE = 10
+
+def generate_population(pop_size):
+    population = []
+    for _ in range(pop_size):
+        individual = random.uniform(MIN_VALUE, MAX_VALUE)
+        population.append(individual)
+    return population
+
+population = generate_population(POPULATION_SIZE)
+print("Initial Population:", population[:10])
+2. Оценка приспособленности
+Оцениваем каждую особь в популяции, вычисляя значение целевой функции для каждого значения 
+x
+x. Чем меньше значение функции, тем лучше приспособленность особи.
+
+
+def fitness_function(x):
+    return x**2
+
+def evaluate_fitness(population):
+    fitnesses = []
+    for individual in population:
+        fitnesses.append(fitness_function(individual))
+    return fitnesses
+
+fitnesses = evaluate_fitness(population)
+print("Fitnesses of Initial Population:", fitnesses[:10])
+3. Отбор
+Отбираем лучших особей для следующего поколения. Можно использовать различные стратегии отбора, например, турнирный отбор или рулеточный отбор.
+
+
+def selection(population, fitnesses, num_parents):
+    parents = []
+    for _ in range(num_parents):
+        tournament_size = 3
+        candidates = random.sample(list(zip(population, fitnesses)), tournament_size)
+        best_candidate = min(candidates, key=lambda x: x[1]) # выбираем кандидата с минимальной фитнес-функцией
+        parents.append(best_candidate[0])
+    return parents
+
+NUM_PARENTS = 20
+parents = selection(population, fitnesses, NUM_PARENTS)
+print("Selected Parents:", parents)
+4. Скрещивание (кроссовер)
+Создаем потомков путем скрещивания выбранных родителей. Один из простых способов кроссовера — линейное смешение двух родителей.
+
+
+def crossover(parent1, parent2):
+    child = (parent1 + parent2) / 2
+    return child
+
+children = []
+for i in range(NUM_PARENTS):
+    parent1 = parents[i]
+    parent2 = parents[(i + 1) % NUM_PARENTS]  # берем второго родителя циклически
+    children.append(crossover(parent1, parent2))
+
+print("Children after Crossover:", children)
+5. Мутация
+Вводим случайные изменения в некоторых потомках, чтобы добавить разнообразие в популяцию и избежать локального минимума.
+
+
+def mutation(child, mutation_rate=0.05):
+    if random.random() < mutation_rate:
+        child += random.gauss(0, 1)  # добавляем небольшое случайное отклонение
+    return child
+
+mutated_children = [mutation(child) for child in children]
+print("Mutated Children:", mutated_children)
+6. Замена поколений
+Заменяем старую популяцию новой, состоящей из детей и мутированных детей.
+
+
+new_population = mutated_children
+print("New Population:", new_population)
+7. Повторение процесса
+Повторяем шаги 2-6 несколько раз, пока не достигнем желаемого уровня точности или не исчерпаем лимит итераций.
+
+
+MAX_GENERATIONS = 50
+best_solution = None
+best_fitness = float('inf')
+
+for generation in range(MAX_GENERATIONS):
+    fitnesses = evaluate_fitness(new_population)
+    best_index = fitnesses.index(min(fitnesses))
+    if fitnesses[best_index] < best_fitness:
+        best_fitness = fitnesses[best_index]
+        best_solution = new_population[best_index]
+    
+    print(f"Generation {generation}: Best Fitness = {best_fitness}, Best Solution = {best_solution}")
+    
+    parents = selection(new_population, fitnesses, NUM_PARENTS)
+    children = [crossover(parents[i], parents[(i + 1) % NUM_PARENTS]) for i in range(NUM_PARENTS)]
+    mutated_children = [mutation(child) for child in children]
+    new_population = mutated_children
+Итоговый код
+Соберем все части вместе:
+
+
+import random
+
+# Параметры
+POPULATION_SIZE = 100
+MIN_VALUE = -10
+MAX_VALUE = 10
+NUM_PARENTS = 20
+MAX_GENERATIONS = 50
+
+def generate_population(pop_size):
+    population = []
+    for _ in range(pop_size):
+        individual = random.uniform(MIN_VALUE, MAX_VALUE)
+        population.append(individual)
+    return population
+
+def fitness_function(x):
+    return x**2
+
+def evaluate_fitness(population):
+    fitnesses = []
+    for individual in population:
+        fitnesses.append(fitness_function(individual))
+    return fitnesses
+
+def selection(population, fitnesses, num_parents):
+    parents = []
+    for _ in range(num_parents):
+        tournament_size = 3
+        candidates = random.sample(list(zip(population, fitnesses)), tournament_size)
+        best_candidate = min(candidates, key=lambda x: x[1]) 
+        parents.append(best_candidate[0])
+    return parents
+
+def crossover(parent1, parent2):
+    child = (parent1 + parent2) / 2
+    return child
+
+def mutation(child, mutation_rate=0.05):
+    if random.random() < mutation_rate:
+        child += random.gauss(0, 1)  
+    return child
+
+# Инициализация
+population = generate_population(POPULATION_SIZE)
+fitnesses = evaluate_fitness(population)
+best_solution = None
+best_fitness = float('inf')
+
+for generation in range(MAX_GENERATIONS):
+    fitnesses = evaluate_fitness(population)
+    best_index = fitnesses.index(min(fitnesses))
+    if fitnesses[best_index] < best_fitness:
+        best_fitness = fitnesses[best_index]
+        best_solution = population[best_index]
+    
+    print(f"Generation {generation}: Best Fitness = {best_fitness}, Best Solution = {best_solution}")
+    
+    parents = selection(population, fitnesses, NUM_PARENTS)
+    children = [crossover(parents[i], parents[(i + 1) % NUM_PARENTS]) for i in range(NUM_PARENTS)]
+    mutated_children = [mutation(child) for child in children]
+    population = mutated_children
+Этот пример демонстрирует базовую реализацию генетического алгоритма для минимизации простой функции. В реальных приложениях могут использоваться более сложные функции приспособленности и дополнительные механизмы улучшения производительности алгоритма.
+
+

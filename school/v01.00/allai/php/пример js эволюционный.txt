@@ -1,0 +1,184 @@
+пример на js искусственного интеллекта с эволюционным алгоритмом
+
+Конечно! Давайте рассмотрим пример на JavaScript, который использует эволюционный алгоритм для нахождения максимума функции. Мы будем решать следующую задачу: найти максимальное значение функции 
+f
+(
+x
+)
+=
+−
+x
+2
++
+25
+x
+−
+150
+f(x)=−x 
+2
+ +25x−150 на интервале 
+[
+0
+,
+30
+]
+[0,30].
+
+Задача
+Максимизировать функцию 
+f
+(
+x
+)
+=
+−
+x
+2
++
+25
+x
+−
+150
+f(x)=−x 
+2
+ +25x−150, где 
+x
+∈
+[
+0
+,
+30
+]
+x∈[0,30].
+
+Решение
+Мы создадим популяцию особей, представляющих возможные решения задачи, и будем улучшать их через эволюционные процессы: селекцию, кроссовер и мутацию.
+
+Шаг 1: Инициализация популяции
+Начнем с генерации случайной популяции.
+
+
+class Individual {
+    constructor(gene) {
+        this.gene = gene;
+    }
+
+    getFitness() {
+        const x = this.gene;
+        return -(x * x) + 25 * x - 150;
+    }
+}
+
+function initializePopulation(size) {
+    const population = [];
+    for (let i = 0; i < size; i++) {
+        const gene = Math.random() * 30; // Генерируем случайное число между 0 и 30
+        population.push(new Individual(gene));
+    }
+    return population;
+}
+Шаг 2: Оценка приспособленности
+Определим функцию для оценки приспособленности каждой особи.
+
+
+function evaluateFitness(population) {
+    return population.map(individual => individual.getFitness());
+}
+Шаг 3: Селекция
+Используем метод рулетки для выбора родителей.
+
+
+function rouletteSelection(population, fitnesses) {
+    const totalFitness = fitnesses.reduce((acc, curr) => acc + curr, 0);
+    const selectedIndividuals = [];
+
+    while (selectedIndividuals.length < population.length) {
+        let randomValue = Math.random() * totalFitness;
+        let currentSum = 0;
+        for (let i = 0; i < population.length; i++) {
+            currentSum += fitnesses[i];
+            if (currentSum >= randomValue) {
+                selectedIndividuals.push(population[i]);
+                break;
+            }
+        }
+    }
+
+    return selectedIndividuals;
+}
+Шаг 4: Кроссовер
+Применим одноточечный кроссовер для создания новых особей.
+
+
+function crossover(parent1, parent2) {
+    const crossPoint = Math.floor(Math.random() * 31);
+    const childGene = (parent1.gene * crossPoint + parent2.gene * (30 - crossPoint)) / 30;
+    return new Individual(childGene);
+}
+Шаг 5: Мутация
+Добавляем небольшую вероятность мутации.
+
+
+function mutate(individual, mutationRate) {
+    if (Math.random() < mutationRate) {
+        const mutationAmount = (Math.random() - 0.5) * 15; // Изменение в пределах [-7.5, 7.5]
+        individual.gene += mutationAmount;
+        individual.gene = Math.max(0, Math.min(30, individual.gene)); // Ограничиваем ген в диапазоне [0, 30]
+    }
+    return individual;
+}
+Шаг 6: Основной цикл эволюции
+Соединяем всё воедино и запускаем основной цикл эволюции.
+
+
+function evolve(population, maxGenerations, mutationRate) {
+    for (let generation = 0; generation < maxGenerations; generation++) {
+        console.log(`Generation ${generation}`);
+
+        const fitnesses = evaluateFitness(population);
+        const maxFitness = Math.max(...fitnesses);
+        const bestIndividualIndex = fitnesses.indexOf(maxFitness);
+        console.log(`Best Fitness: ${maxFitness} | Gene: ${population[bestIndividualIndex].gene}`);
+
+        const matingPool = rouletteSelection(population, fitnesses);
+
+        const nextGeneration = [];
+        while (nextGeneration.length < population.length) {
+            const parent1 = matingPool.splice(Math.floor(Math.random() * matingPool.length), 1)[0];
+            const parent2 = matingPool.splice(Math.floor(Math.random() * matingPool.length), 1)[0];
+            const child = crossover(parent1, parent2);
+            nextGeneration.push(mutate(child, mutationRate));
+        }
+
+        population = nextGeneration;
+    }
+
+    return population;
+}
+Запуск программы
+Теперь можно запустить эволюционный процесс.
+
+
+const POPULATION_SIZE = 100;
+const MAX_GENERATIONS = 200;
+const MUTATION_RATE = 0.01;
+
+const initialPopulation = initializePopulation(POPULATION_SIZE);
+const finalPopulation = evolve(initialPopulation, MAX_GENERATIONS, MUTATION_RATE);
+
+const finalFitnesses = evaluateFitness(finalPopulation);
+const maxFinalFitness = Math.max(...finalFitnesses);
+const bestFinalIndividualIndex = finalFitnesses.indexOf(maxFinalFitness);
+
+console.log(`Final Best Fitness: ${maxFinalFitness} | Gene: ${finalPopulation[bestFinalIndividualIndex].gene}`);
+Объяснение работы программы
+Инициализация популяции: Создается начальная популяция из 100 особей, каждая из которых представляет собой случайное число в диапазоне от 0 до 30.
+Оценка приспособленности: Вычисляется значение функции для каждой особи.
+Селекция: Используется метод рулетки для выбора родителей на основе их приспособленности.
+Кроссовер: Применяется одноточечный кроссовер для создания нового потомства.
+Мутация: Случайным образом изменяется ген с заданной вероятностью.
+Основной цикл эволюции: Процесс повторяется на протяжении 200 поколений, после чего выводится лучшее найденное решение.
+Результат
+После выполнения программы вы увидите результаты для каждого поколения, включая лучшую приспособленность и соответствующее ей значение гена. В конце будет выведено окончательное наилучшее решение.
+
+Этот пример иллюстрирует основные принципы работы эволюционного алгоритма и может быть расширен для решения более сложных задач.

@@ -1,0 +1,212 @@
+пример на cs искусственного интеллекта с эволюционным алгоритмом
+
+Давайте рассмотрим пример на языке C#, который использует эволюционный алгоритм для нахождения максимального значения функции. Задачей будет поиск максимума функции 
+f
+(
+x
+)
+=
+−
+x
+2
++
+40
+x
+−
+300
+f(x)=−x 
+2
+ +40x−300 на интервале 
+[
+0
+,
+35
+]
+[0,35].
+
+Задача
+Максимизировать функцию
+−
+x
+2
++
+40
+x
+−
+300
+f(x)=−x 
+2
+ +40x−300, где 
+x
+∈
+[
+0
+,
+35
+]
+x∈[0,35].
+
+Решение
+Мы создадим популяцию особей, представляющих возможные решения задачи, и будем улучшать их через эволюционные процессы: селекцию, кроссовер и мутацию.
+
+Шаг 1: Определение класса для особи
+Начнем с определения класса Individual, который будет представлять отдельную особь в популяции.
+
+
+using System;
+
+public class Individual
+{
+    public double Gene { get; set; }
+
+    public Individual(double gene)
+    {
+        Gene = gene;
+    }
+
+    public double GetFitness()
+    {
+        var x = Gene;
+        return -(x * x) + 40 * x - 300;
+    }
+}
+Шаг 2: Инициализация популяции
+Генерация случайной популяции.
+
+
+static List<Individual> InitializePopulation(int size)
+{
+    var population = new List<Individual>();
+    var random = new Random();
+
+    for (int i = 0; i < size; i++)
+    {
+        var gene = random.NextDouble() * 35; // Генерируем случайное число между 0 и 35
+        population.Add(new Individual(gene));
+    }
+
+    return population;
+}
+Шаг 3: Оценка приспособленности
+Определение функции для оценки приспособленности каждой особи.
+
+
+static List<double> EvaluateFitness(List<Individual> population)
+{
+    return population.Select(individual => individual.GetFitness()).ToList();
+}
+Шаг 4: Селекция
+Использование метода рулетки для выбора родителей.
+
+
+static List<Individual> RouletteSelection(List<Individual> population, List<double> fitnesses)
+{
+    var totalFitness = fitnesses.Sum();
+    var selectedIndividuals = new List<Individual>();
+
+    var random = new Random();
+    while (selectedIndividuals.Count < population.Count)
+    {
+        var randomValue = random.NextDouble() * totalFitness;
+        var currentSum = 0.0;
+
+        foreach (var individual in population)
+        {
+            currentSum += individual.GetFitness();
+            if (currentSum >= randomValue)
+            {
+                selectedIndividuals.Add(individual);
+                break;
+            }
+        }
+    }
+
+    return selectedIndividuals;
+}
+Шаг 5: Кроссовер
+Применение одноточечного кроссовера для создания новых особей.
+
+
+static Individual Crossover(Individual parent1, Individual parent2)
+{
+    var random = new Random();
+    var crossPoint = random.Next(36);
+    var childGene = (parent1.Gene * crossPoint + parent2.Gene * (35 - crossPoint)) / 35;
+    return new Individual(childGene);
+}
+Шаг 6: Мутация
+Добавление небольшой вероятности мутации.
+
+
+static void Mutate(Individual individual, double mutationRate)
+{
+    var random = new Random();
+    if (random.NextDouble() < mutationRate)
+    {
+        var mutationAmount = (random.NextDouble() - 0.5) * 17.5; // Изменение в пределах [-8.75, 8.75]
+        individual.Gene += mutationAmount;
+        individual.Gene = Math.Max(0, Math.Min(35, individual.Gene)); // Ограничиваем ген в диапазоне [0, 35]
+    }
+}
+Шаг 7: Основной цикл эволюции
+Соединяем всё воедино и запускаем основной цикл эволюции.
+
+
+static List<Individual> Evolve(List<Individual> population, int maxGenerations, double mutationRate)
+{
+    for (int generation = 0; generation < maxGenerations; generation++)
+    {
+        Console.WriteLine($"Generation {generation}");
+
+        var fitnesses = EvaluateFitness(population);
+        var maxFitness = fitnesses.Max();
+        var bestIndividualIndex = fitnesses.IndexOf(maxFitness);
+        Console.WriteLine($"Best Fitness: {maxFitness} | Gene: {population[bestIndividualIndex].Gene}");
+
+        var matingPool = RouletteSelection(population, fitnesses);
+
+        var nextGeneration = new List<Individual>();
+        while (nextGeneration.Count < population.Count)
+        {
+            var parent1 = matingPool[new Random().Next(matingPool.Count)];
+            var parent2 = matingPool[new Random().Next(matingPool.Count)];
+            var child = Crossover(parent1, parent2);
+            Mutate(child, mutationRate);
+            nextGeneration.Add(child);
+        }
+
+        population = nextGeneration;
+    }
+
+    return population;
+}
+Запуск программы
+Запустим эволюционный процесс.
+
+
+public static void Main(string[] args)
+{
+    const int POPULATION_SIZE = 100;
+    const int MAX_GENERATIONS = 200;
+    const double MUTATION_RATE = 0.01;
+
+    var initialPopulation = InitializePopulation(POPULATION_SIZE);
+    var finalPopulation = Evolve(initialPopulation, MAX_GENERATIONS, MUTATION_RATE);
+
+    var finalFitnesses = EvaluateFitness(finalPopulation);
+    var maxFinalFitness = finalFitnesses.Max();
+    var bestFinalIndividualIndex = finalFitnesses.IndexOf(maxFinalFitness);
+
+    Console.WriteLine($"Final Best Fitness: {maxFinalFitness} | Gene: {finalPopulation[bestFinalIndividualIndex].Gene}");
+}
+Объяснение работы программы
+Инициализация популяции: Создается начальная популяция из 100 особей, каждая из которых представляет собой случайное число в диапазоне от 0 до 35.
+Оценка приспособленности: Вычисляется значение функции для каждой особи.
+Селекция: Используется метод рулетки для выбора родителей на основе их приспособленности.
+Кроссовер: Применяется одноточечный кроссовер для создания нового потомства.
+Мутация: Случайным образом изменяется ген с заданной вероятностью.
+Основной цикл эволюции: Процесс повторяется на протяжении 200 поколений, после чего выводится лучшее найденное решение.
+Результат
+После выполнения программы вы увидите результаты для каждого поколения, включая лучшую приспособленность и соответствующее ему значение гена. В конце будет выведено окончательное наилучшее решение.
+
+Этот пример иллюстрирует основные принципы работы эволюционного алгоритма и может быть расширен для решения более сложных задач.

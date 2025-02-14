@@ -1,0 +1,86 @@
+пример на cs искусственного интеллекта с обратным распространением ошибки
+
+Обратное распространение ошибки (backpropagation) — это ключевой алгоритм обучения нейронных сетей, который используется для корректировки весов сети на основе ошибок, возникающих на выходе. Этот метод особенно важен для глубокого обучения и широко применяется в современных системах искусственного интеллекта.
+
+Ниже приведён пример на языке C# с использованием библиотеки Accord.NET, которая предоставляет инструменты для работы с нейронными сетями и машинным обучением.
+
+Установка необходимых пакетов
+Перед началом работы необходимо установить пакеты Accord.NET и Accord.Math через NuGet:
+
+
+Install-Package Accord.Math
+Install-Package Accord.Neuro
+Пример кода
+
+using System;
+using Accord.Neuro;
+using Accord.Neuro.Learning;
+using Accord.Math;
+
+namespace BackpropagationExample
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // Генерация тренировочных данных
+            double[][] inputs =
+            {
+                new double[] { 0, 0 },
+                new double[] { 0, 1 },
+                new double[] { 1, 0 },
+                new double[] { 1, 1 }
+            };
+
+            double[][] outputs =
+            {
+                new double[] { 0 },
+                new double[] { 1 },
+                new double[] { 1 },
+                new double[] { 0 }
+            };
+
+            // Создание нейронной сети
+            ActivationNetwork network = new ActivationNetwork(
+                new SigmoidFunction(), // Активационная функция
+                2,                    // Входной слой (2 нейрона)
+                4,                    // Скрытый слой (4 нейрона)
+                1                     // Выходной слой (1 нейрон)
+            );
+
+            // Алгоритм обучения
+            LevenbergMarquardtLearning teacher = new LevenbergMarquardtLearning(network);
+
+            // Обучение сети
+            for (int i = 0; i < 5000; i++)
+            {
+                double error = teacher.RunEpoch(inputs, outputs);
+                if (error < 0.001)
+                {
+                    break;
+                }
+            }
+
+            // Предсказание результатов
+            double[] prediction = network.Compute(new double[] { 0, 0 });
+            Console.WriteLine($"Prediction for input [0, 0]: {prediction[0]}");
+
+            prediction = network.Compute(new double[] { 0, 1 });
+            Console.WriteLine($"Prediction for input [0, 1]: {prediction[0]}");
+
+            prediction = network.Compute(new double[] { 1, 0 });
+            Console.WriteLine($"Prediction for input [1, 0]: {prediction[0]}");
+
+            prediction = network.Compute(new double[] { 1, 1 });
+            Console.WriteLine($"Prediction for input [1, 1]: {prediction[0]}");
+        }
+    }
+}
+Объяснение кода
+Импорт библиотек: Используются библиотеки Accord.Neuro и Accord.Math для работы с нейронными сетями и математикой соответственно.
+Трeниpoвочные данные: Создаются входные данные и соответствующие им выходные данные для XOR-задачи.
+Создание нейронной сети: Создаётся сеть с сигмоидной активационной функцией, одним скрытым слоем и одним выходным слоем.
+Алгоритм обучения: Используется алгоритм Левенберга-Марквардта для обучения сети.
+Процесс обучения: Сеть обучается на тренировочных данных с использованием обратного распространения ошибки.
+Предсказание результатов: После завершения обучения сеть делает прогнозы для разных входных данных.
+Этот пример демонстрирует использование обратного распространения ошибки для обучения нейронной сети на XOR-задаче. Вы можете адаптировать этот код под ваши собственные задачи, изменяя количество слоев, размерности и используемые данные.
