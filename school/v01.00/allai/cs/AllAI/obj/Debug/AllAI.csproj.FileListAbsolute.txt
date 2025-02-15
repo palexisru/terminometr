@@ -1,0 +1,11 @@
+C:\Game\terminometr\school\v01.00\allai\cs\AllAI\bin\Debug\AllAI.exe.config
+C:\Game\terminometr\school\v01.00\allai\cs\AllAI\bin\Debug\AllAI.exe
+C:\Game\terminometr\school\v01.00\allai\cs\AllAI\bin\Debug\AllAI.pdb
+C:\Game\terminometr\school\v01.00\allai\cs\AllAI\obj\Debug\AllAI.csproj.AssemblyReference.cache
+C:\Game\terminometr\school\v01.00\allai\cs\AllAI\obj\Debug\AllAI.csproj.SuggestedBindingRedirects.cache
+C:\Game\terminometr\school\v01.00\allai\cs\AllAI\obj\Debug\AllAI.MDI_parent_form.resources
+C:\Game\terminometr\school\v01.00\allai\cs\AllAI\obj\Debug\AllAI.Properties.Resources.resources
+C:\Game\terminometr\school\v01.00\allai\cs\AllAI\obj\Debug\AllAI.csproj.GenerateResource.cache
+C:\Game\terminometr\school\v01.00\allai\cs\AllAI\obj\Debug\AllAI.csproj.CoreCompileInputs.cache
+C:\Game\terminometr\school\v01.00\allai\cs\AllAI\obj\Debug\AllAI.exe
+C:\Game\terminometr\school\v01.00\allai\cs\AllAI\obj\Debug\AllAI.pdb

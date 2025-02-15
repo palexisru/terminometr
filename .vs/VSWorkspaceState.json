@@ -3,8 +3,10 @@
     "",
     "\\school",
     "\\school\\v01.00",
-    "\\school\\v01.00\\allai"
+    "\\school\\v01.00\\allai",
+    "\\school\\v01.00\\allai\\cs",
+    "\\school\\v01.00\\allai\\php"
   ],
-  "SelectedNode": "\\school\\v01.00\\allai",
+  "SelectedNode": "\\school\\v01.00\\allai\\cs",
   "PreviewInSolutionExplorer": false
 }

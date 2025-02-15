@@ -1,0 +1,127 @@
+Эволюционное программирование (ЭП) — это одна из ветвей эволюционных алгоритмов, которая фокусируется на изменении поведения программы или функции через мутацию и отбор. Она особенно полезна для задач, связанных с автоматическим созданием программ или моделей поведения. Давайте рассмотрим пример кода на PHP, демонстрирующий основы эволюционного программирования для задачи оптимизации функции.
+
+### Задача
+
+Допустим, нам нужно найти минимальное значение функции $f(x) = x^2$. Мы будем использовать эволюционное программирование для нахождения этого минимума.
+
+### Код
+
+```php
+<?php
+
+class EvolutionaryProgramming {
+    
+    private $populationSize;
+    private $mutationRate;
+    private $maxGenerations;
+    private $minX;
+    private $maxX;
+    private $precision;
+    
+    public function __construct($populationSize, $mutationRate, $maxGenerations, $minX, $maxX, $precision) {
+        $this->populationSize = $populationSize;
+        $this->mutationRate = $mutationRate;
+        $this->maxGenerations = $maxGenerations;
+        $this->minX = $minX;
+        $this->maxX = $maxX;
+        $this->precision = $precision;
+    }
+    
+    // Функция для генерации случайного числа в пределах заданного диапазона
+    private function generateRandomNumber() {
+        return mt_rand($this->minX * pow(10, $this->precision), $this->maxX * pow(10, $this->precision)) / pow(10, $this->precision);
+    }
+    
+    // Генерация начальной популяции
+    private function initializePopulation() {
+        $population = [];
+        
+        for ($i = 0; $i < $this->populationSize; $i++) {
+            $population[] = [
+                'gene' => $this->generateRandomNumber(),
+                'fitness' => $this->calculateFitness($this->generateRandomNumber())
+            ];
+        }
+        
+        return $population;
+    }
+    
+    // Функция для вычисления значения функции
+    private function calculateFunctionValue($x) {
+        return $x * $x;
+    }
+    
+    // Функция для вычисления приспособленности особи
+    private function calculateFitness($x) {
+        return 1 / (abs($this->calculateFunctionValue($x)) + 1); // Максимум функции стремится к 1
+    }
+    
+    // Выбор лучшей особи из популяции
+    private function selectBestIndividual($population) {
+        usort($population, function($a, $b) {
+            return $b['fitness'] <=> $a['fitness'];
+        });
+        
+        return $population[0];
+    }
+    
+    // Мутация особи
+    private function mutate($individual) {
+        if (mt_rand(0, 99) < $this->mutationRate * 100) {
+            $mutatedGene = $this->generateRandomNumber();
+            return ['gene' => $mutatedGene, 'fitness' => $this->calculateFitness($mutatedGene)];
+        }
+        
+        return $individual;
+    }
+    
+    // Запуск ЭП
+    public function run() {
+        $population = $this->initializePopulation();
+        
+        for ($generation = 0; $generation < $this->maxGenerations; $generation++) {
+            $newPopulation = [];
+            
+            foreach ($population as $individual) {
+                $newPopulation[] = $this->mutate($individual);
+            }
+            
+            $population = $newPopulation;
+        }
+        
+        return $this->selectBestIndividual($population)['gene'];
+    }
+}
+
+// Параметры ЭП
+$populationSize = 20;
+$mutationRate = 0.05;
+$maxGenerations = 50;
+$minX = -10;
+$maxX = 10;
+$precision = 4;
+
+// Создание экземпляра класса Эволюционное Программирование
+$ep = new EvolutionaryProgramming($populationSize, $mutationRate, $maxGenerations, $minX, $maxX, $precision);
+
+// Запуск ЭП
+$result = $ep->run();
+echo "Минимальное значение x: " . number_format($result, $precision) . "\n";
+?>
+```
+
+### Объяснение кода
+
+1. **Класс `EvolutionaryProgramming`**:
+   - Конструктор принимает параметры для настройки работы алгоритма: размер популяции, вероятность мутации, количество поколений, диапазон значений переменной $x$, точность представления чисел.
+   
+2. **Методы**:
+   - `generateRandomNumber`: генерирует случайное число в заданных границах.
+   - `initializePopulation`: создает начальную популяцию случайным образом.
+   - `calculateFunctionValue`: вычисляет значение целевой функции для данного $x$.
+   - `calculateFitness`: вычисляет приспособленность особи (чем ближе к минимуму функции, тем выше приспособленность).
+   - `selectBestIndividual`: выбирает лучшую особь из текущей популяции.
+   - `mutate`: мутирует генотип особи с определенной вероятностью.
+   - `run`: основной метод, который запускает процесс эволюции и возвращает оптимальное решение.
+
+Этот пример демонстрирует простую реализацию эволюционного программирования для задачи минимизации функции. В реальных приложениях могут использоваться более сложные функции и дополнительные механизмы для улучшения эффективности алгоритма.
